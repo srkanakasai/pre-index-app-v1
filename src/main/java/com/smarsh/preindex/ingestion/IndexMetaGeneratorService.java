@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.smarsh.preindex.common.Constants;
@@ -27,6 +26,7 @@ import com.smarsh.preindex.common.Region;
 import com.smarsh.preindex.common.UTIL;
 import com.smarsh.preindex.config.ApplicationContextProvider;
 import com.smarsh.preindex.config.PreIndexMetaConfigs;
+import com.smarsh.preindex.dal.IndexMetaDataRepo;
 import com.smarsh.preindex.model.HistogramData;
 import com.smarsh.preindex.model.IndexMetaData;
 import com.smarsh.preindex.model.Pair;
@@ -36,6 +36,9 @@ public class IndexMetaGeneratorService {
 	
 	@Autowired
 	private PreIndexMetaConfigs metaConfigs;
+	
+	@Autowired
+	private IndexMetaDataRepo metaDataRepo;
 
 	private static final int SEQ_NO_1000 = 1000;
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
@@ -92,6 +95,9 @@ public class IndexMetaGeneratorService {
 					summary.append(String.format("\tRegion : %s, Index creation Exception", region.name()));
 				}
 			}
+			
+			metaDataRepo.isIndexPresent(null);
+			
 			summary.append("**\tEnd Of Summary\t**");
 		} catch(Exception e) {
 			e.printStackTrace();
