@@ -1,4 +1,4 @@
-package com.smarsh.preindex.model;
+package com.smarsh.preindex.bo;
 
 public class Pair<T, V> {
 	public T left;

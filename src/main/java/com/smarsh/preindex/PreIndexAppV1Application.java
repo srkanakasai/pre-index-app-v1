@@ -22,6 +22,8 @@ public class PreIndexAppV1Application {
 		IndexMetaGeneratorService preIndexService = appContext.getBean(IndexMetaGeneratorService.class);
 		
 		preIndexService.generatePreIndexes(Arrays.asList(Region.values()));
+		
+		appContext.close();
 	}
 
 }

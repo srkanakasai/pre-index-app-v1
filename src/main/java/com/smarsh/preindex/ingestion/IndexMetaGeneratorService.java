@@ -19,26 +19,27 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import com.smarsh.preindex.bo.HistogramData;
+import com.smarsh.preindex.bo.Pair;
 import com.smarsh.preindex.common.Constants;
 import com.smarsh.preindex.common.IndexManagerService;
 import com.smarsh.preindex.common.Region;
 import com.smarsh.preindex.common.UTIL;
 import com.smarsh.preindex.config.ApplicationContextProvider;
 import com.smarsh.preindex.config.PreIndexMetaConfigs;
-import com.smarsh.preindex.dal.IndexMetaDataRepo;
-import com.smarsh.preindex.model.HistogramData;
 import com.smarsh.preindex.model.IndexMetaData;
-import com.smarsh.preindex.model.Pair;
+import com.smarsh.preindex.repo.mongo.IndexMetaDataRepo;
 
-@Component
+@Service
 public class IndexMetaGeneratorService {
 	
 	@Autowired
 	private PreIndexMetaConfigs metaConfigs;
 	
 	@Autowired
-	private IndexMetaDataRepo metaDataRepo;
+	private PreIndexService preIndexService;
 
 	private static final int SEQ_NO_1000 = 1000;
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
@@ -88,6 +89,8 @@ public class IndexMetaGeneratorService {
 							region);
 
 					List<IndexMetaData> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
+					
+					this.preIndexService.save(indexes);
 
 					summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region.name(), groupByIndexSumMax.size()));
 				} catch (IOException ioe) {
@@ -96,7 +99,7 @@ public class IndexMetaGeneratorService {
 				}
 			}
 			
-			metaDataRepo.isIndexPresent(null);
+			//metaDataRepo.isIndexPresent(null);
 			
 			summary.append("**\tEnd Of Summary\t**");
 		} catch(Exception e) {

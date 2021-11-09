@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.smarsh.preindex.dal;
+package com.smarsh.preindex.repo.mongo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -18,7 +18,6 @@ public class IndexMetaDataRepo {
 	
 	@Autowired
 	private MongoClient mongoClient;
-	
 	
 	public boolean isIndexPresent(IndexMetaData indexMetaData) {
 		

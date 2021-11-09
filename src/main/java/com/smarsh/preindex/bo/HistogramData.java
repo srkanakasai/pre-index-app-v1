@@ -1,4 +1,4 @@
-package com.smarsh.preindex.model;
+package com.smarsh.preindex.bo;
 
 import java.math.BigDecimal;
 import java.util.Date;
