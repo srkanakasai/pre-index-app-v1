@@ -1,0 +1,809 @@
+{
+	"_doc": {
+			"_source": 	{
+				"excludes": [	
+					"subj",	
+					"attrs",
+					"texts",	
+					"actions.content",
+					"actions.attrs",
+					"policies.content",
+					"policies.attrs",
+					"files.path",
+					"files.name",
+					"files.ext",
+					"files.conttype",
+					"files.size",
+					"files.duration",
+					"files.content",
+					"files.attrs",
+					"ed.comment",
+					"sv.curr.comment",
+					"sv.past.comment"
+				]
+			},
+			"dynamic":		"strict",			
+			"properties": {
+				"doc_type": 	{
+					"type": "join",
+					"relations": { 
+						"idoc": ["ed","sv"]
+						
+					}
+				},
+				
+				"gtid": 				{"type":"keyword", "doc_values":false},
+				"gcid": 				{"type":"keyword"},
+				"scksum": 		{"type":"keyword", "index":false, "doc_values":false},
+				"pkgids": 			{"type":"keyword", "doc_values":false},
+				"transids": 		{"type":"keyword", "doc_values":false},
+				"interids": 			{"type":"keyword", "doc_values":false},
+				"resloc": 			{"type":"keyword", "doc_values":false},						
+				"rpolids": 			{"type":"keyword"},
+				"cluster": 			{"type":"keyword"},
+					
+				"stime": 			{"type":"date", "format":"date_time"},
+				"ptime": 			{"type":"date", "format":"date_time"},
+				"atime": 			{"type":"date", "format":"date_time"},
+					
+				"net": 				{"type":"keyword"},
+				"chan": 			{"type":"keyword"},
+				"subnets": 		{"type":"keyword", "index":false, "doc_values":false, "copy_to":["net"]},
+				"subchans": 		{"type":"keyword", "index":false, "doc_values":false, "copy_to":["chan"]},				
+				
+				"langs":        		{"type":"keyword"},
+				"dstate":			{"type":"keyword"},
+				"commtype": 	{"type":"keyword"},
+				"iflag": 				{"type":"keyword"},
+				"fsubj": 				{"type":"keyword", "index":false},						
+				"subj": 				{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false},
+				"tstatus":			{"type":"keyword"},	
+				"disclms":			{"type":"keyword", "doc_values":false},
+				"nsize":				{"type":"long"},
+				"extver": 				{"type":"keyword"},
+				
+				"ucnts": { 
+					"properties": {				
+						"from": {
+							"properties": {    		 
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}
+						},
+						"to": {
+							"properties": {
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}
+						},
+						"cc": {
+							"properties": {
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}
+						},
+						"bcc": {
+							"properties": {
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}
+						},
+						"to_cc_bcc": {
+							"properties": { 
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}   		 
+						},
+						"other": {
+							"properties": { 
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}   		 
+						},
+						"parts": {
+							"properties": {
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}	 
+						},
+						"all": {
+							"properties": {
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}	 
+						},
+						"sender": {
+							"properties": {    		 
+								"int": {"type":"integer"},
+								"ext": {"type":"integer"},
+								"tot": {"type":"integer"}
+							}
+						}
+					}
+				},
+				"tcnts": {
+					"properties": {
+						"int": {"type":"integer"},
+						"ext": {"type":"integer"},
+						"tot": {"type":"integer"}
+					}
+				},
+				"fcnts": {
+					"properties": {
+						"int": {"type":"integer"},
+						"ext": {"type":"integer"},
+						"tot": {"type":"integer"}
+					}
+				},
+				"lcnt":				{"type":"integer"},
+				"acnt": 				{"type":"integer"},
+				"pcnt": 				{"type":"integer"},
+				"ffcnt": 				{"type":"integer"},
+				"attrs": 				{"type":"keyword", "doc_values":false},
+				
+				"iusers": { 
+					"properties": {    					
+						"from": {
+							"properties": {    		 
+								"user":				{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"to": {
+							"properties": {
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.user","users.to_cc_bcc.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.userid","users.to_cc_bcc.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.display","users.to_cc_bcc.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.rdisplay","users.to_cc_bcc.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.epid","users.to_cc_bcc.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.repid","users.to_cc_bcc.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.domain","users.to_cc_bcc.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.rdomain","users.to_cc_bcc.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.groups","users.to_cc_bcc.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.dept","users.to_cc_bcc.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.div","users.to_cc_bcc.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.bldg","users.to_cc_bcc.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.city","users.to_cc_bcc.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.state","users.to_cc_bcc.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.country","users.to_cc_bcc.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.attrs","users.to_cc_bcc.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"cc": {
+							"properties": {
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.user","users.to_cc_bcc.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.userid","users.to_cc_bcc.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.display","users.to_cc_bcc.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.rdisplay","users.to_cc_bcc.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.epid","users.to_cc_bcc.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.repid","users.to_cc_bcc.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.domain","users.to_cc_bcc.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.rdomain","users.to_cc_bcc.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.groups","users.to_cc_bcc.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.dept","users.to_cc_bcc.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.div","users.to_cc_bcc.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.bldg","users.to_cc_bcc.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.city","users.to_cc_bcc.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.state","users.to_cc_bcc.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.country","users.to_cc_bcc.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.attrs","users.to_cc_bcc.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"bcc": {
+							"properties": {
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.user","users.to_cc_bcc.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.userid","users.to_cc_bcc.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.display","users.to_cc_bcc.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.rdisplay","users.to_cc_bcc.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.epid","users.to_cc_bcc.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.repid","users.to_cc_bcc.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.domain","users.to_cc_bcc.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.rdomain","users.to_cc_bcc.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.groups","users.to_cc_bcc.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.dept","users.to_cc_bcc.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.div","users.to_cc_bcc.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.bldg","users.to_cc_bcc.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.city","users.to_cc_bcc.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.state","users.to_cc_bcc.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.country","users.to_cc_bcc.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.attrs","users.to_cc_bcc.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"other": {
+							"properties": {    		 
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.attrs","users.all.attrs"]}
+							}
+						},
+						"sender": {
+							"properties": {    		 
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						}					
+					}
+	    		},
+	    		"eusers": { 
+					"properties": {    					
+						"from": {
+							"properties": {    		 
+								"user":				{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false, "copy_to":["users.from.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.from.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"to": {
+							"properties": {
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.user","users.to_cc_bcc.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.userid","users.to_cc_bcc.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.display","users.to_cc_bcc.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.rdisplay","users.to_cc_bcc.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.epid","users.to_cc_bcc.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.repid","users.to_cc_bcc.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.domain","users.to_cc_bcc.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.rdomain","users.to_cc_bcc.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.groups","users.to_cc_bcc.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.dept","users.to_cc_bcc.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.div","users.to_cc_bcc.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.bldg","users.to_cc_bcc.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.city","users.to_cc_bcc.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.state","users.to_cc_bcc.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.country","users.to_cc_bcc.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.to.attrs","users.to_cc_bcc.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"cc": {
+							"properties": {
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.user","users.to_cc_bcc.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.userid","users.to_cc_bcc.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.display","users.to_cc_bcc.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.rdisplay","users.to_cc_bcc.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.epid","users.to_cc_bcc.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.repid","users.to_cc_bcc.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.domain","users.to_cc_bcc.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.rdomain","users.to_cc_bcc.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.groups","users.to_cc_bcc.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.dept","users.to_cc_bcc.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.div","users.to_cc_bcc.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.bldg","users.to_cc_bcc.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.city","users.to_cc_bcc.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.state","users.to_cc_bcc.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.country","users.to_cc_bcc.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.cc.attrs","users.to_cc_bcc.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"bcc": {
+							"properties": {
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.user","users.to_cc_bcc.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.userid","users.to_cc_bcc.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.display","users.to_cc_bcc.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.rdisplay","users.to_cc_bcc.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.epid","users.to_cc_bcc.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.repid","users.to_cc_bcc.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.domain","users.to_cc_bcc.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.rdomain","users.to_cc_bcc.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.groups","users.to_cc_bcc.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.dept","users.to_cc_bcc.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.div","users.to_cc_bcc.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.bldg","users.to_cc_bcc.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.city","users.to_cc_bcc.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.state","users.to_cc_bcc.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.country","users.to_cc_bcc.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.bcc.attrs","users.to_cc_bcc.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						},
+						"other": {
+							"properties": {    		 
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.other.attrs","users.all.attrs"]}
+							}
+						},
+						"sender": {
+							"properties": {    		 
+								"user":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.user","users.parts.user","users.all.user"]},
+								"userid":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.userid","users.parts.userid","users.all.userid"]},
+								"display":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.display","users.parts.display","users.all.display"]},
+								"rdisplay":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.rdisplay","users.parts.rdisplay","users.all.rdisplay"]},
+								"epid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.epid","users.parts.epid","users.all.epid"]},
+								"repid":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.repid","users.parts.repid","users.all.repid"]},
+								"domain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.domain","users.parts.domain","users.all.domain"]},
+								"rdomain":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.rdomain","users.parts.rdomain","users.all.rdomain"]},
+								"groups":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.groups","users.parts.groups","users.all.groups"]},
+								"dept":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.dept","users.parts.dept","users.all.dept"]},
+								"div":					{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.div","users.parts.div","users.all.div"]},
+								"bldg":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.bldg","users.parts.bldg","users.all.bldg"]},
+								"city":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.city","users.parts.city","users.all.city"]},
+								"state":				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.state","users.parts.state","users.all.state"]},
+								"country":			{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.country","users.parts.country","users.all.country"]},
+								"attrs": 				{"type":"keyword", "index":false, "doc_values":false,  "copy_to":["users.sender.attrs","users.parts.attrs","users.all.attrs"]}
+							}
+						}					
+					}
+	    		},
+				"users": { 
+					"properties": {    					
+						"from": {
+							"properties": {    		 
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						},
+						"to": {
+							"properties": {
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						},
+						"cc": {
+							"properties": {
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						},
+						"bcc": {
+							"properties": {
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						},
+						"to_cc_bcc": {
+							"properties": { 
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}   		 
+						},
+						"parts": {
+							"properties": {    		 
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						},
+						"other": {
+							"properties": {    		 
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						},
+						"all": {
+							"properties": {
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}	 
+						},
+						"sender": {
+							"properties": {    		 
+								"user":				{"type":"keyword"},
+								"userid":			{"type":"keyword"},
+								"display":			{"type":"keyword"},
+								"rdisplay":			{"type":"keyword"},
+								"epid":				{"type":"keyword"},
+								"repid":				{"type":"keyword"},
+								"domain":			{"type":"keyword"},
+								"rdomain":			{"type":"keyword"},
+								"groups":			{"type":"keyword"},
+								"dept":				{"type":"keyword"},
+								"div":					{"type":"keyword"},
+								"bldg":				{"type":"keyword"},
+								"city":				{"type":"keyword"},
+								"state":				{"type":"keyword"},
+								"country":			{"type":"keyword"},
+								"attrs": 				{"type":"keyword"}
+							}
+						}					
+					}
+	    		},
+	    		
+	    		"texts": {
+	    			"properties": {
+						"user": {
+							  "properties": {
+								"content": 			{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false},	
+								"attrvals": 			{"type":"text", "index":false, "copy_to":["texts.user.content"]},
+								"attrs": 				{"type":"keyword", "doc_values":false}
+							}
+						},
+						"sys": {
+							  "properties": {
+								"content": 			{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false},	
+								"attrs": 				{"type":"keyword", "doc_values":false}
+							}
+						}
+					}
+				},				
+				"lexicons": 		{"type":"keyword"},		
+					
+				"actions": {
+					"properties": {
+						"type":				{"type":"keyword"},
+						"content": 			{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false},	
+						"attrs": 				{"type":"keyword", "doc_values":false}
+					}
+				},
+				"policies": {
+					"properties": {
+						"category":		{"type":"keyword"},
+						"content": 			{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false},	
+						"attrs": 				{"type":"keyword", "doc_values":false}
+					}
+				},	
+				"files": {				
+					"properties": {
+						"path": 				{"type":"text", "analyzer":"alcatraz_nostop_tokenized_string", "norms":false},
+						"name":			{"type":"keyword"},
+						"ext":    			{"type":"keyword"},
+						"conttype":		{"type":"keyword"},
+						"cntcksum":			{"type":"keyword", "index":false, "doc_values":false},
+						"cksum":			{"type":"keyword", "index":false, "doc_values":false},
+						"tstatus":			{"type":"keyword", "index":false, "doc_values":false},
+						"size":				{"type":"long"},
+						"duration":         {"type":"long"},				
+						"content": 			{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false},	
+						"attrs": 				{"type":"keyword", "doc_values":false}
+					}
+				},
+					
+				"appid": 			{"type":"keyword"},
+				"appobjid": 		{"type":"keyword"},
+				
+				"ed" : {		
+					"properties"  : {
+						"collect" : {
+							"properties" : {						
+								"time": 				{"type":"date", "format":"date_time"},				
+								"user": {
+									"properties": {
+										"user":		{"type":"keyword", "index":false, "doc_values":false},
+										"userid":	{"type":"keyword"}
+									}
+								}
+							}
+						},						
+						"user" : {
+							"properties" : {
+								"user":			{"type":"keyword", "index":false, "doc_values":false},
+								"userid":		{"type":"keyword"}
+							}
+						},
+						"utime":				{"type":"date", "format":"date_time"},
+						"hold": 					{"type":"boolean"},	
+						"tagfl": 					{"type":"boolean"},							
+						"tags": {
+							"properties": {
+								"id":    			{"type":"keyword"},
+								"name":  		{"type":"keyword", "index":false, "doc_values":false}			  			
+							}
+						},					
+						"attrs": 				{"type":"keyword", "doc_values":false},
+						"comment": 				{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false}
+					}
+				},
+				
+				"sv": {
+					"properties": {
+						"qinfo": {
+							"properties": {
+								"qtime":				{"type":"date", "format":"date_time"},
+								"labels": 				{"type":"keyword"},
+								"orgtype":				{"type":"keyword"},
+								"orgpcnt":				{"type":"integer"},
+								"orghcnt":				{"type":"integer"},
+								"orgpols": {
+									"properties": {
+										"id":				{"type":"keyword"},
+										"name":		{"type":"keyword", "index":false, "doc_values":false},
+										"type":				{"type":"keyword"}
+									}
+								},
+								"orguser": {
+									"properties": {
+										"user":			{"type":"keyword", "index":false, "doc_values":false},
+										"userid":		{"type":"keyword"}
+									}
+								},
+								"suserscnt":		{"type":"integer"},
+								"susers": {
+									"properties": {
+										"user":			{"type":"keyword", "index":false, "doc_values":false},
+										"userid":		{"type":"keyword"}
+									}
+								},
+								"sgrps":	{"type":"keyword"}
+							}
+						},
+						"curr": {
+							"properties": {
+								"hold": 				{"type":"boolean"},						
+								"level": 				{"type":"integer"},
+								"state": 			{"type":"keyword"},								
+								"atags": {
+									"properties": {
+										"id":    		{"type":"keyword"},
+										"name":  	{"type":"keyword", "index":false, "doc_values":false}			  			
+									}
+								},						
+								"rtags": {
+									"properties": {
+										"id":    		{"type":"keyword"},
+										"name":  	{"type":"keyword", "index":false, "doc_values":false}
+									}
+								},        
+								"asguser":{
+									"properties": {
+										"user":		{"type":"keyword", "index":false, "doc_values":false},
+										"userid":	{"type":"keyword"}
+									}
+								},				
+								"acctuserscnt":	{"type":"integer"},
+								"acctusers": {
+									"properties": {
+										"user":		{"type":"keyword", "index":false, "doc_values":false},
+										"userid":	{"type":"keyword"}
+									}
+								},
+								"comment":  		{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false}
+							}
+						},
+						"last": {
+							"properties": {
+								"act":					{"type":"keyword"},
+								"time": 					{"type":"date", "format":"date_time"},
+								"user": {
+									"properties": {
+										"user":			{"type":"keyword", "index":false, "doc_values":false},
+										"userid":		{"type":"keyword"}
+									}
+								}
+							}
+						},
+						"past": {
+							"properties": {				
+								"user": {
+									"properties": {
+										"user":			{"type":"keyword", "index":false, "doc_values":false},
+										"userid":		{"type":"keyword"}
+									}
+								},
+								"atags": {
+									"properties": {
+										"id":    			{"type":"keyword"},
+										"name":  		{"type":"keyword", "index":false, "doc_values":false}
+									}
+								},
+								"rtags": {
+									"properties": {
+										"id":    			{"type":"keyword"},
+										"name":  		{"type":"keyword", "index":false, "doc_values":false}
+									}
+								},
+								"comment":  			{"type":"text", "analyzer":"alcatraz_tokenized_string", "norms":false}
+							}
+						},
+						"enrich":{
+							"properties":{
+								"vendor":{
+									"type":"keyword"
+								},
+								"score":{
+									"type":"double"
+								},
+								"model":{
+									"type":"keyword"
+								},
+								"status":{
+									"type":"boolean"
+								},
+								"etime":{
+									"type":"date",
+									"format":"date_time"
+								},
+								"einfo":{
+									"type":"text",
+									"analyzer":"standard",
+									"norms":false
+								},
+								"label":{
+									"type":"text",
+									"analyzer":"standard",
+									"norms":false
+								},
+								"version":{
+                                                                        "type":"text",
+                                                                        "analyzer":"standard",
+                                                                        "norms":false
+                                                                }
+							}
+						}
+					}
+				}
+			}
+		}
+}

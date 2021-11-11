@@ -18,19 +18,17 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.smarsh.preindex.bo.HistogramData;
 import com.smarsh.preindex.bo.Pair;
 import com.smarsh.preindex.common.Constants;
-import com.smarsh.preindex.common.IndexManagerService;
+import com.smarsh.preindex.common.IndexType;
 import com.smarsh.preindex.common.Region;
 import com.smarsh.preindex.common.UTIL;
 import com.smarsh.preindex.config.ApplicationContextProvider;
 import com.smarsh.preindex.config.PreIndexMetaConfigs;
 import com.smarsh.preindex.model.IndexMetaData;
-import com.smarsh.preindex.repo.mongo.IndexMetaDataRepo;
 
 @Service
 public class IndexMetaGeneratorService {
@@ -39,7 +37,7 @@ public class IndexMetaGeneratorService {
 	private PreIndexMetaConfigs metaConfigs;
 	
 	@Autowired
-	private PreIndexService preIndexService;
+	private IndexingService preIndexService;
 
 	private static final int SEQ_NO_1000 = 1000;
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
@@ -65,7 +63,7 @@ public class IndexMetaGeneratorService {
 		activeFl = true;
 		indexFull = false;
 		cluster = "data";
-		indexType = IndexManagerService.ARCHIVE.name();
+		indexType = IndexType.ARCHIVE.name();
 		siteId = properties.getProperty(Constants.ALCATRAZ_SITE);
 		mappingSchemaVersion = properties.getProperty(Constants.INDEXMANAGER_ARCHIVE_SCHEMA_VERSION);
 	}
@@ -81,22 +79,7 @@ public class IndexMetaGeneratorService {
 					this.metaConfigs.getFillThreshold())*mega;
 
 			for(Region region : regions) {
-				try {
-					Stream<String> lines = UTIL.readFile(region.getFileName(),this);
-
-					ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax = this.groupByOutliersAndSize(
-							lines, 
-							region);
-
-					List<IndexMetaData> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
-					
-					this.preIndexService.save(indexes);
-
-					summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region.name(), groupByIndexSumMax.size()));
-				} catch (IOException ioe) {
-					logger.info("Exception when processing "+region.getFileName(), ioe);
-					summary.append(String.format("\tRegion : %s, Index creation Exception", region.name()));
-				}
+				handleRegion(summary, region);
 			}
 			
 			//metaDataRepo.isIndexPresent(null);
@@ -109,6 +92,25 @@ public class IndexMetaGeneratorService {
 		finally {
 			logger.info(summary.toString());
 			logger.info("***generatePreIndexes END****");
+		}
+	}
+
+	private void handleRegion(StringBuilder summary, Region region) {
+		try {
+			Stream<String> lines = UTIL.readFile(region.getFileName(),this);
+
+			ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax = this.groupByOutliersAndSize(
+					lines, 
+					region);
+
+			List<IndexMetaData> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
+			
+			indexes.forEach(index -> this.preIndexService.index(index, true));
+			
+			summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region.name(), groupByIndexSumMax.size()));
+		} catch (IOException ioe) {
+			logger.info("Exception when processing "+region.getFileName(), ioe);
+			summary.append(String.format("\tRegion : %s, Index creation Exception", region.name()));
 		}
 	}
 

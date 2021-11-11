@@ -3,17 +3,23 @@ package com.smarsh.preindex.common;
 import static com.smarsh.preindex.common.Constants.ROUND_OFF_FACTOR;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.stream.Stream;
 
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.springframework.core.io.ClassPathResource;
 
 public class UTIL {
+	
+	private static final Logger LOG = Logger.getLogger(UTIL.class);
 
 	public static String getDateForIndex(Date date) {
 		Calendar calendar = Calendar.getInstance();
@@ -66,4 +72,15 @@ public class UTIL {
 		DateTime time = new DateTime(startTime, DateTimeZone.UTC);
 		return time.withTime(0,0,0,0).plusDays(1).getMillis()-1;
 	}
+	
+    public static String loadAsString(final String path) {
+        try {
+            final File resource = new ClassPathResource(path).getFile();
+
+            return new String(Files.readAllBytes(resource.toPath()));
+        } catch (final Exception e) {
+            LOG.error(e.getMessage(), e);
+            return null;
+        }
+    }
 }

@@ -1,2 +1,32 @@
 {
+	"index": {
+			"analysis": {
+				"filter" : {
+					"alcatraz_pattern_capture" : {
+						"type": 					"pattern_capture",
+						"preserve_original": true,
+						"patterns": 			[ "([^ -]+)" ]
+					}
+				},
+				"analyzer": {
+					"alcatraz_tokenized_string": {
+						"type": 					"custom",
+						"tokenizer":			"standard_actiance",
+						"filter":					["standard", "alcatraz_pattern_capture", "lowercase", "asciifolding", "stop"],
+						"stopwords_path":	"stopwords_en.txt"					
+					},
+					"alcatraz_nostop_tokenized_string": {
+						"type": 			"custom",
+						"tokenizer":	"standard_actiance",
+						"filter":			["standard", "alcatraz_pattern_capture", "lowercase", "asciifolding"]		
+					},
+					"alcatraz_exact_string": {
+						"type":                 "custom",
+						"tokenizer":    "standard_actiance",
+						"filter":               ["standard", "lowercase", "asciifolding", "stop"],
+						"stopwords_path":       "stopwords_en.txt"
+					}
+				}
+			}
+		}
 }

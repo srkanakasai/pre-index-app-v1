@@ -1,6 +1,5 @@
 package com.smarsh.preindex.common;
 
-public enum IndexManagerService {
+public enum IndexType {
 	ARCHIVE
-
 }
