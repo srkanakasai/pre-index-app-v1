@@ -14,9 +14,10 @@ public class Constants {
 		}
 	};
 	
-	public static final Date parse(String date) {
+	public static final Date parse(String dateStr) {
 		try {
-			return dateFormat.get().parse(date);
+			Date date = dateFormat.get().parse(dateStr);
+			return date;
 		} catch (ParseException e) {
 			return null;
 		}

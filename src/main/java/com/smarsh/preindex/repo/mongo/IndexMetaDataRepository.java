@@ -5,10 +5,12 @@ package com.smarsh.preindex.repo.mongo;
 
 import java.util.List;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
+import com.smarsh.preindex.config.PreIndexMetaConfigs;
+import com.smarsh.preindex.exception.MetaDataCreationException;
 import com.smarsh.preindex.model.IndexMetaData;
 
 /**
@@ -16,20 +18,39 @@ import com.smarsh.preindex.model.IndexMetaData;
  *
  */
 @Repository
-public interface IndexMetaDataRepository extends MongoRepository<IndexMetaData,String> {
+public class IndexMetaDataRepository {
+	@Autowired
+	private IIndexMetaDataRepository repository;
 
-	@Query("{'indexName' : ?0 , 'siteId' : ?1 , 'indexAppType' : ?2 , 'indexVersion' : ?3}")
-	List<IndexMetaData> findByIndexNameSiteIdAppTypeAndIndexVersion(
-			String indexName, 
-			String siteId, 
-			String indexAppType, 
-			String indexVersion);
+	@Autowired
+	private PreIndexMetaConfigs configs;
 
-	@Query(value="{'indexName' : ?0 , 'siteId' : ?1 , 'indexAppType' : ?2 , 'indexVersion' : ?3}", delete = true)
-	List<IndexMetaData> deleteByIndexNameSiteIdAppTypeAndIndexVersion(
-			String indexName, 
-			String siteId, 
-			String indexAppType,
-			String indexVersion);
-	
+	public boolean isExisting(IndexMetaData metaData) {
+		List<IndexMetaData> indexDocs = this.repository.findByIndexNameSiteIdAppTypeAndIndexVersion(
+				metaData.getIndexName(), 
+				metaData.getSiteId(),
+				metaData.getIndexAppType(), 
+				metaData.getIndexVersion());
+		
+		if(indexDocs == null || CollectionUtils.isEmpty(indexDocs))
+			return false;
+		else
+			return true;
+	}
+
+	public IndexMetaData createIndexMetaData(IndexMetaData metaData) throws MetaDataCreationException{
+
+		if(!configs.getIsMongoPersistenceEnabled())
+			return null;
+
+		return repository.insert(metaData);
+	}
+
+	public void deleteIndexMetaData(IndexMetaData metaData) {
+		this.repository.deleteByIndexNameSiteIdAppTypeAndIndexVersion(
+				metaData.getIndexName(), 
+				metaData.getSiteId(),
+				metaData.getIndexAppType(), 
+				metaData.getIndexVersion());
+	}
 }

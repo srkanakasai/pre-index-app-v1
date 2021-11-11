@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
@@ -73,6 +74,11 @@ public class UTIL {
 		return time.withTime(0,0,0,0).plusDays(1).getMillis()-1;
 	}
 	
+	public static Long getEndOfDay(Date date) {
+		DateTime time = new DateTime(date, DateTimeZone.UTC);
+		return time.withTime(0,0,0,0).plusDays(1).getMillis()-1;
+	}
+	
     public static String loadAsString(final String path) {
         try {
             final File resource = new ClassPathResource(path).getFile();
@@ -83,4 +89,22 @@ public class UTIL {
             return null;
         }
     }
+    
+    public static void main(String[] args) {
+		Date date = Constants.parse("1987-12-31");
+		System.out.println("1987-12-31 = "+date);
+		
+		DateTime time = new DateTime(date, DateTimeZone.UTC);
+		Date utcDate = new Date(time.getMillis());
+		System.out.println("UTC="+utcDate);
+		
+		Date gmtDate = UTIL.getGMTDate(utcDate.getTime()/1000);
+		System.out.println("gmtDate="+gmtDate);
+	}
+    
+    public static Date getGMTDate(long timeInMillis) {
+		Calendar gmtCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		gmtCalendar.setTimeInMillis(timeInMillis);
+		return gmtCalendar.getTime();
+	}
 }

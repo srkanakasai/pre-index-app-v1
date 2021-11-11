@@ -13,6 +13,7 @@
 package com.smarsh.preindex.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -49,13 +50,13 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 	@Indexed(unique=true)
 	private String indexName;
 	
-	private long fromDate;
-	private long toDate;
-	private Long maxDate;
-	private Long maxProcessedDate;
+	private Date fromDate;
+	private Date toDate;
+	private Date maxDate;
+	private Date maxProcessedDate;
 	private String indexVersion;
-	private Long createDateTime;
-	private Long modifiedDateTime;
+	private Date createDateTime;
+	private Date modifiedDateTime;
 	private int shardCount;
 	private int replicaCount;
 	private int sequenceNumber;
@@ -87,41 +88,11 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 	public void setIndexAppType(String indexType) {
 		this.indexAppType = indexType;
 	}
-	public long getFromDate() {
-		return fromDate;
-	}
-	public void setFromDate(Long fromDateTime) {
-		this.fromDate = fromDateTime;
-	}
-	public long getToDate() {
-		return toDate;
-	}
-	public void setToDate(Long toDateTime) {
-		this.toDate = toDateTime;
-	}
-	public Long getMaxDate() {
-		return maxDate;
-	}
-	public void setMaxDate(Long maxDate) {
-		this.maxDate = maxDate;
-	}
 	public String getIndexVersion() {
 		return indexVersion;
 	}
 	public void setIndexVersion(String indexVersion) {
 		this.indexVersion = indexVersion;
-	}
-	public Long getCreateDateTime() {
-		return createDateTime;
-	}
-	public void setCreateDateTime(Long createDateTime) {
-		this.createDateTime = createDateTime;
-	}
-	public Long getModifiedDateTime() {
-		return modifiedDateTime;
-	}
-	public void setModifiedDateTime(Long modifiedDateTime) {
-		this.modifiedDateTime = modifiedDateTime;
 	}
 	public int getShardCount() {
 		return shardCount;
@@ -159,7 +130,42 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 	public void setSiteId(String siteId) {
 		this.siteId = siteId;
 	}
-
+	public Date getFromDate() {
+		return fromDate;
+	}
+	public void setFromDate(Date fromDate) {
+		this.fromDate = fromDate;
+	}
+	public Date getToDate() {
+		return toDate;
+	}
+	public void setToDate(Date toDate) {
+		this.toDate = toDate;
+	}
+	public Date getMaxDate() {
+		return maxDate;
+	}
+	public void setMaxDate(Date maxDate) {
+		this.maxDate = maxDate;
+	}
+	public Date getMaxProcessedDate() {
+		return maxProcessedDate;
+	}
+	public void setMaxProcessedDate(Date maxProcessedDate) {
+		this.maxProcessedDate = maxProcessedDate;
+	}
+	public Date getCreateDateTime() {
+		return createDateTime;
+	}
+	public void setCreateDateTime(Date createDateTime) {
+		this.createDateTime = createDateTime;
+	}
+	public Date getModifiedDateTime() {
+		return modifiedDateTime;
+	}
+	public void setModifiedDateTime(Date modifiedDateTime) {
+		this.modifiedDateTime = modifiedDateTime;
+	}
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -253,6 +259,7 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 			return false;
 		return true;
 	}
+	
 	@Override
 	public int compareTo(IndexMetaData otherMetadata) {
 		if (this == otherMetadata)
@@ -272,9 +279,9 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 		if(!indexAppType.equals(otherMetadata.indexAppType))
 			return indexAppType.compareTo(otherMetadata.indexAppType);
 
-		if(!(this.fromDate-otherMetadata.fromDate==0))
-			return (fromDate-otherMetadata.fromDate)>0?1:-1;
-
+		if(!fromDate.equals(otherMetadata.fromDate))
+			return fromDate.compareTo(otherMetadata.fromDate);
+		
 		return (int)(sequenceNumber-otherMetadata.sequenceNumber);
 	}
 
@@ -312,11 +319,5 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 			metaData.setSiteId(getSiteId() );
 			return metaData;
 		}
-	}
-	public Long getMaxProcessedDateTime() {
-		return maxProcessedDate;
-	}
-	public void setMaxProcessedDateTime(Long maxProcessedDateTime) {
-		this.maxProcessedDate = maxProcessedDateTime;
 	}
 }

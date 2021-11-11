@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.smarsh.preindex.ingestion;
+package com.smarsh.preindex.service;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import com.smarsh.preindex.exception.MetaDataCreationException;
 import com.smarsh.preindex.exception.PreIndexRunTimeException;
 import com.smarsh.preindex.model.IndexMetaData;
 import com.smarsh.preindex.repo.es.EsIndexMetaDataRepo;
+import com.smarsh.preindex.repo.mongo.IndexMetaDataRepository;
 
 /**
  * @author sridhar.kanakasai
@@ -29,7 +30,7 @@ public class IndexingService {
 	private EsIndexMetaDataRepo esIndexMetaDataRepo;
 
 	@Autowired
-	private IndexMetaDataService metaDataService;
+	private IndexMetaDataRepository metaDataService;
 	
 	@Recover
 	public void recover(IndexCreationException exception, 

@@ -1,4 +1,4 @@
-package com.smarsh.preindex.ingestion;
+package com.smarsh.preindex.service;
 
 import static com.smarsh.preindex.common.Constants.dateFormat;
 import static com.smarsh.preindex.common.Constants.mega;
@@ -151,10 +151,10 @@ public class IndexMetaGeneratorService {
 					fw.write(String.format("[%s -to- %s]\t:\tIndexID:%s, MemoryConsumption:%d(KB)|%d(GB)\n",
 							startRange.getDateInString(), endRange.getDateInString(), indexName, indexMemSize.intValue(), indexMemSize.intValue()/mega));
 
-					//FIXME
 					IndexMetaData indexMetaData = prepareIndexMetadata(
-							SEQ_NO_1000, this.activeFl, this.indexFull, this.siteId, this.cluster, this.indexType, this.mappingSchemaVersion, 
-							i, i, replicaCount, this.metaConfigs.getShards(), indexName);
+							SEQ_NO_1000, 
+							this.activeFl, this.indexFull, this.siteId, this.cluster, this.indexType, this.mappingSchemaVersion, 
+							startDate, endRange.getDate(), replicaCount, this.metaConfigs.getShards(), indexName);
 					indexes.add(indexMetaData);
 				}
 
@@ -170,15 +170,20 @@ public class IndexMetaGeneratorService {
 	}
 
 	public IndexMetaData prepareIndexMetadata(int seqNo, boolean activeFl, boolean indexFull, String siteId,
-			String cluster, String indexType, String mappingSchemaVersion, long startTime, long toTime,
+			String cluster, String indexType, String mappingSchemaVersion, Date startDate, Date endDate,
 			int replicaCount, int shardCount, String indexName) {
+		
+		Date currentDate = UTIL.getGMTDate(System.currentTimeMillis());
+		
 		IndexMetaData indexMetaData = new IndexMetaData();
 		indexMetaData.setActiveFl(activeFl);
 		indexMetaData.setCluster(cluster);
-		indexMetaData.setCreateDateTime(System.currentTimeMillis());
-		indexMetaData.setFromDate(startTime);
-		indexMetaData.setToDate(toTime);
-		indexMetaData.setMaxDate(UTIL.getEndOfDay(startTime));
+		indexMetaData.setCreateDateTime(currentDate);
+		indexMetaData.setFromDate(startDate);
+		indexMetaData.setToDate(endDate);
+		indexMetaData.setMaxDate(new Date(UTIL.getEndOfDay(startDate)));
+		indexMetaData.setModifiedDateTime(currentDate);
+		indexMetaData.setMaxProcessedDate(currentDate);
 		indexMetaData.setIndexAppType(indexType);
 		indexMetaData.setIndexFull(indexFull);
 		indexMetaData.setIndexName(indexName);
