@@ -1,6 +1,8 @@
 package com.smarsh.preindex.config;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Optional;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +21,10 @@ public class PreIndexMetaConfigs {
 	private BigDecimal indexToDocMem;
 	private String tenant;
 	private Boolean enableOutliers;
-	
+	private String startDate;
+	private Boolean isEsPersistenceEnabled;
+	private Boolean isMongoPersistenceEnabled;
+
 	public int getShards() {
 		return shards;
 	}
@@ -56,6 +61,22 @@ public class PreIndexMetaConfigs {
 	public void setEnableOutliers(Boolean enableOutliers) {
 		this.enableOutliers = enableOutliers;
 	}
-	
-	
+	public Date getStartDate() {
+		return Constants.parse(startDate);
+	}
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+	public Boolean getIsEsPersistenceEnabled() {
+		return isEsPersistenceEnabled;
+	}
+	public void setIsEsPersistenceEnabled(Boolean isEsPersistenceEnabled) {
+		this.isEsPersistenceEnabled = isEsPersistenceEnabled;
+	}
+	public Boolean getIsMongoPersistenceEnabled() {
+		return isMongoPersistenceEnabled;
+	}
+	public void setIsMongoPersistenceEnabled(Boolean isMongoPersistenceEnabled) {
+		this.isMongoPersistenceEnabled = isMongoPersistenceEnabled;
+	}
 }

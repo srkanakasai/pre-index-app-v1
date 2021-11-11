@@ -5,11 +5,16 @@ package com.smarsh.preindex.ingestion;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import com.smarsh.preindex.exception.IndexCreationException;
+import com.smarsh.preindex.exception.MetaDataCreationException;
+import com.smarsh.preindex.exception.PreIndexRunTimeException;
 import com.smarsh.preindex.model.IndexMetaData;
 import com.smarsh.preindex.repo.es.EsIndexMetaDataRepo;
-import com.smarsh.preindex.repo.mongo.IndexMetaDataRepo;
 
 /**
  * @author sridhar.kanakasai
@@ -24,15 +29,71 @@ public class IndexingService {
 	private EsIndexMetaDataRepo esIndexMetaDataRepo;
 
 	@Autowired
-	private IndexMetaDataRepo indexMetaDataRepo;
+	private IndexMetaDataService metaDataService;
+	
+	@Recover
+	public void recover(IndexCreationException exception, 
+			final IndexMetaData metaData,
+			boolean deleteExisting) {
+		boolean isDocPresent = this.metaDataService.isExisting(metaData);
+		if(isDocPresent)
+			this.metaDataService.deleteIndexMetaData(metaData);
+	}
+	
+	@Recover
+	public void recover(MetaDataCreationException exception, 
+			final IndexMetaData metaData,
+			boolean deleteExisting) {
+		boolean isIndexPresent = this.esIndexMetaDataRepo.isExisting(metaData.getIndexName());
+		if(isIndexPresent)
+			this.esIndexMetaDataRepo.deleteIndex(metaData.getIndexName());
+	}
 
-	public void index(final IndexMetaData metaData, boolean deleteExisting) {
+	@Retryable(
+			include = {
+					IndexCreationException.class,
+					MetaDataCreationException.class,
+					PreIndexRunTimeException.class
+			},
+			maxAttemptsExpression = "${indexretry.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${indexretry.maxDelay}")
+			)
+	public void index(
+			final IndexMetaData metaData,
+			boolean deleteExisting) throws 
+	IndexCreationException, MetaDataCreationException {
 
 		try {
-			esIndexMetaDataRepo.index(metaData.getIndexName(), deleteExisting);
-		} catch (final Exception e) {
-			LOG.error(e.getMessage(), e);
+			boolean isIndexPresent = this.esIndexMetaDataRepo.isExisting(metaData.getIndexName());
+			boolean isDocPresent = this.metaDataService.isExisting(metaData);
+
+			if( isIndexPresent
+					&& isDocPresent) {
+				LOG.info("Index = "+metaData.getIndexName()+" already exist");
+				return;
+			}
+
+			if(!isIndexPresent) {
+				this.esIndexMetaDataRepo.index(
+						metaData.getIndexName(), 
+						metaData.getShardCount(), 
+						metaData.getReplicaCount(),
+						deleteExisting);
+			}
+
+			if(!isDocPresent) {
+				this.metaDataService.createIndexMetaData(metaData);
+			}
+
+		} catch (IndexCreationException e) {
+			e.printStackTrace();
+			throw e;
+		} catch (MetaDataCreationException e) {
+			e.printStackTrace();
+			throw e;
 		}
 	}
+	
+	
 
 }

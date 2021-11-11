@@ -40,8 +40,12 @@ public class Constants {
 	public static final long giga = mega * kilo;
 	public static final long tera = giga * kilo;
 	
-	public static final String ES_ARCHIVE_NUM_REPLICAS = "server.archive.number_of_replicas";
-	public static final String ES_SETTINGS_NUM_REPLICAS_VAL = "0";
 	public static final String ALCATRAZ_SITE = "alcatraz.site.id";
 	public static final String INDEXMANAGER_ARCHIVE_SCHEMA_VERSION = "indexmanager.archive.schemaVersion";
+	
+	/**
+	 * ES settings
+	 */
+	public static final String ELASTICSEARCH_SETTINGS_NUM_SHARDS = "index.number_of_shards";
+	public static final String ELASTICSEARCH_SETTINGS_NUM_REPLICAS = "index.number_of_replicas";
 }

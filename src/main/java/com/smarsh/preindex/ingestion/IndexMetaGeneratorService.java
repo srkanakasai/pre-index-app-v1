@@ -13,8 +13,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,14 @@ import org.springframework.stereotype.Service;
 
 import com.smarsh.preindex.bo.HistogramData;
 import com.smarsh.preindex.bo.Pair;
-import com.smarsh.preindex.common.Constants;
 import com.smarsh.preindex.common.IndexType;
 import com.smarsh.preindex.common.Region;
 import com.smarsh.preindex.common.UTIL;
 import com.smarsh.preindex.config.ApplicationContextProvider;
+import com.smarsh.preindex.config.ElasticSearchConfig;
 import com.smarsh.preindex.config.PreIndexMetaConfigs;
+import com.smarsh.preindex.exception.IndexCreationException;
+import com.smarsh.preindex.exception.MetaDataCreationException;
 import com.smarsh.preindex.model.IndexMetaData;
 
 @Service
@@ -37,12 +40,14 @@ public class IndexMetaGeneratorService {
 	private PreIndexMetaConfigs metaConfigs;
 	
 	@Autowired
+	private ElasticSearchConfig esConfigs;
+	
+	@Autowired
 	private IndexingService preIndexService;
 
 	private static final int SEQ_NO_1000 = 1000;
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
 	private static Long MAX_SIZE_PER_INDEX = 200000000l;
-	private final Properties properties;
 
 	private int replicaCount;
 	private boolean activeFl;
@@ -51,21 +56,16 @@ public class IndexMetaGeneratorService {
 	private String indexType;
 	private String siteId;
 	private String mappingSchemaVersion;
-
-	public IndexMetaGeneratorService(Properties properties) {
-		this.properties = properties;
-		postConstruct();
-	}
-
-	private void postConstruct() {
-		replicaCount = Integer.parseInt(properties.getProperty(Constants.ES_ARCHIVE_NUM_REPLICAS,
-				Constants.ES_SETTINGS_NUM_REPLICAS_VAL));
+	
+	@PostConstruct
+	public void init() {
+		replicaCount = esConfigs.getArchiveNumberOfReplicas();
 		activeFl = true;
 		indexFull = false;
 		cluster = "data";
 		indexType = IndexType.ARCHIVE.name();
-		siteId = properties.getProperty(Constants.ALCATRAZ_SITE);
-		mappingSchemaVersion = properties.getProperty(Constants.INDEXMANAGER_ARCHIVE_SCHEMA_VERSION);
+		siteId = esConfigs.getSideId();
+		mappingSchemaVersion = esConfigs.getIndexManagerArchiveSchemaVersion();
 	}
 
 	public void generatePreIndexes(List<Region> regions) {
@@ -81,8 +81,6 @@ public class IndexMetaGeneratorService {
 			for(Region region : regions) {
 				handleRegion(summary, region);
 			}
-			
-			//metaDataRepo.isIndexPresent(null);
 			
 			summary.append("**\tEnd Of Summary\t**");
 		} catch(Exception e) {
@@ -105,7 +103,14 @@ public class IndexMetaGeneratorService {
 
 			List<IndexMetaData> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
 			
-			indexes.forEach(index -> this.preIndexService.index(index, true));
+			indexes.forEach(index -> {
+				try {
+					this.preIndexService.index(index, false);
+				} catch (IndexCreationException | MetaDataCreationException e) {
+					//DO Nothing
+					//Already handled in the index service
+				}
+			});
 			
 			summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region.name(), groupByIndexSumMax.size()));
 		} catch (IOException ioe) {
@@ -136,9 +141,10 @@ public class IndexMetaGeneratorService {
 					Integer indexMemSize = groupByIndexSumMax.get(i).getLeft().intValue();
 					Date startDate = startRange.getDate();
 					String indexName = String.format("%s_%s_data_%s_%d_archive.av5", 
-							this.metaConfigs.getTenant(), 
-							region.name(), 
-							UTIL.getDateForIndex(startDate), SEQ_NO_1000);
+												this.metaConfigs.getTenant(), 
+												region.name(), 
+												UTIL.getDateForIndex(startDate), SEQ_NO_1000)
+											.toLowerCase();
 
 					logger.debug(String.format("IndexID:%s, StartDate:%s, EndDate:%s, MemoryConsumption:%d(KB)|%d(GB), ",
 							indexName, startRange.getDateInString(), endRange.getDateInString(), indexMemSize.intValue(), indexMemSize.intValue()/mega));
@@ -204,6 +210,7 @@ public class IndexMetaGeneratorService {
 					return histogramData;
 				})
 				.sorted((h1,h2)->Long.valueOf(h1.getDate().getTime()).compareTo(h2.getDate().getTime()))
+				.filter(histoGram -> histoGram.getDate().after(metaConfigs.getStartDate()))
 				.collect(ArrayList<Pair<Double, List<HistogramData>>>::new, Accumulator::indexAggregator, (x, y) -> {});
 
 		return groupByIndexSumMax;

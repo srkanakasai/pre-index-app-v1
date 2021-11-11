@@ -14,7 +14,12 @@ package com.smarsh.preindex.model;
 
 import java.io.Serializable;
 
-public class IndexMetaData implements Serializable,Comparable<IndexMetaData>{
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document (collection = "index_metadata")
+public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -35,9 +40,15 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData>{
 	public static final String indexFull_string = 	"indexFull";
 	public static final String siteId_string = 	"siteId";
 
+	@Id
+	private String _id;
+	
 	private String indexAppType;
 	private String cluster;
+	
+	@Indexed(unique=true)
 	private String indexName;
+	
 	private long fromDate;
 	private long toDate;
 	private Long maxDate;
@@ -52,6 +63,12 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData>{
 	private boolean indexFull;
 	private String siteId;
 
+	public String get_id() {
+		return _id;
+	}
+	public void set_id(String _id) {
+		this._id = _id;
+	}
 	public String getIndexName() {
 		return indexName;
 	}
@@ -145,17 +162,17 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData>{
 
 	@Override
 	public String toString() {
-		return "IndexMetaData [indexType=" + indexAppType + ", cluster=" + cluster
-				+ ", indexName=" + indexName + ", fromDate=" + fromDate
-				+ ", toDate=" + toDate + ", maxDate=" + maxDate
-				+ ", indexVersion=" + indexVersion + ", createDateTime="
-				+ createDateTime + ", modifiedDateTime=" + modifiedDateTime
-				+", maxProcessedDate=" + maxProcessedDate
-				+ ", shardCount=" + shardCount + ", replicaCount="
-				+ replicaCount + ", sequenceNumber="
-				+ sequenceNumber + ", activeFl=" + activeFl + ", indexFull="
-				+ indexFull + ", siteId=" + siteId
-				+ "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("IndexMetaData [_id=").append(_id).append(", indexAppType=").append(indexAppType)
+				.append(", cluster=").append(cluster).append(", indexName=").append(indexName).append(", fromDate=")
+				.append(fromDate).append(", toDate=").append(toDate).append(", maxDate=").append(maxDate)
+				.append(", maxProcessedDate=").append(maxProcessedDate).append(", indexVersion=").append(indexVersion)
+				.append(", createDateTime=").append(createDateTime).append(", modifiedDateTime=")
+				.append(modifiedDateTime).append(", shardCount=").append(shardCount).append(", replicaCount=")
+				.append(replicaCount).append(", sequenceNumber=").append(sequenceNumber).append(", activeFl=")
+				.append(activeFl).append(", indexFull=").append(indexFull).append(", siteId=").append(siteId)
+				.append("]");
+		return builder.toString();
 	}
 	@Override
 	public int hashCode() {
