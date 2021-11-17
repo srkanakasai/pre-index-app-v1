@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.smarsh.preindex.exception.IndexCreationException;
 import com.smarsh.preindex.exception.MetaDataCreationException;
 import com.smarsh.preindex.exception.PreIndexRunTimeException;
-import com.smarsh.preindex.model.IndexMetaData;
+import com.smarsh.preindex.model.IndexMetaDataDO;
 import com.smarsh.preindex.repo.es.EsIndexMetaDataRepo;
 import com.smarsh.preindex.repo.mongo.IndexMetaDataRepository;
 
@@ -34,7 +34,7 @@ public class IndexingService {
 	
 	@Recover
 	public void recover(IndexCreationException exception, 
-			final IndexMetaData metaData,
+			final IndexMetaDataDO metaData,
 			boolean deleteExisting) {
 		boolean isDocPresent = this.metaDataService.isExisting(metaData);
 		if(isDocPresent)
@@ -43,7 +43,7 @@ public class IndexingService {
 	
 	@Recover
 	public void recover(MetaDataCreationException exception, 
-			final IndexMetaData metaData,
+			final IndexMetaDataDO metaData,
 			boolean deleteExisting) {
 		boolean isIndexPresent = this.esIndexMetaDataRepo.isExisting(metaData.getIndexName());
 		if(isIndexPresent)
@@ -60,7 +60,7 @@ public class IndexingService {
             backoff = @Backoff(delayExpression = "${indexretry.maxDelay}")
 			)
 	public void index(
-			final IndexMetaData metaData,
+			final IndexMetaDataDO metaData,
 			boolean deleteExisting) throws 
 	IndexCreationException, MetaDataCreationException {
 

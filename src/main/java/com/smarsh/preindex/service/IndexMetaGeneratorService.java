@@ -15,61 +15,48 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 
 import com.smarsh.preindex.bo.HistogramData;
+import com.smarsh.preindex.bo.IndexMetaDataBO;
 import com.smarsh.preindex.bo.Pair;
-import com.smarsh.preindex.common.IndexType;
 import com.smarsh.preindex.common.Region;
 import com.smarsh.preindex.common.UTIL;
 import com.smarsh.preindex.config.ApplicationContextProvider;
-import com.smarsh.preindex.config.ElasticSearchConfig;
 import com.smarsh.preindex.config.PreIndexMetaConfigs;
 import com.smarsh.preindex.exception.IndexCreationException;
 import com.smarsh.preindex.exception.MetaDataCreationException;
-import com.smarsh.preindex.model.IndexMetaData;
+import com.smarsh.preindex.transformer.IndexMetaDataTransformer;
 
 @Service
-public class IndexMetaGeneratorService {
-	
+public class IndexMetaGeneratorService implements ApplicationRunner{
+
+	private static final String INDEX_NAME_PATTERN = "%s_data_%s_%d_archive.av5";
+
 	@Autowired
 	private PreIndexMetaConfigs metaConfigs;
-	
-	@Autowired
-	private ElasticSearchConfig esConfigs;
-	
+
 	@Autowired
 	private IndexingService preIndexService;
+	
+	@Autowired
+	private IndexMetaDataTransformer metaDataTransformer;
 
 	private static final int SEQ_NO_1000 = 1000;
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
-	private static Long MAX_SIZE_PER_INDEX = 200000000l;
-
-	private int replicaCount;
-	private boolean activeFl;
-	private boolean indexFull;
-	private String cluster;
-	private String indexType;
-	private String siteId;
-	private String mappingSchemaVersion;
+	private static Long MAX_SIZE_PER_INDEX = 200000000l; //DEFAULT
 	
-	@PostConstruct
-	public void init() {
-		replicaCount = esConfigs.getArchiveNumberOfReplicas();
-		activeFl = true;
-		indexFull = false;
-		cluster = "data";
-		indexType = IndexType.ARCHIVE.name();
-		siteId = esConfigs.getSideId();
-		mappingSchemaVersion = esConfigs.getIndexManagerArchiveSchemaVersion();
+	@Override
+	public void run(ApplicationArguments args) throws Exception {
+		generatePreIndexes(Arrays.asList(Region.values()));
 	}
 
 	public void generatePreIndexes(List<Region> regions) {
-		logger.info("***generatePreIndexes STARTS****");
+		logger.info("***generatePreIndexes STARTS with TESTMODE="+this.metaConfigs.getIsTestMode()+"****");
 		StringBuilder summary = new StringBuilder("\n**\tIndex Summary\t**\n");
 		try {
 
@@ -81,7 +68,7 @@ public class IndexMetaGeneratorService {
 			for(Region region : regions) {
 				handleRegion(summary, region);
 			}
-			
+
 			summary.append("**\tEnd Of Summary\t**");
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -93,25 +80,30 @@ public class IndexMetaGeneratorService {
 		}
 	}
 
-	private void handleRegion(StringBuilder summary, Region region) {
+	private void handleRegion(final StringBuilder summary, final Region region) {
 		try {
-			Stream<String> lines = UTIL.readFile(region.getFileName(),this);
+			Stream<String> lines = UTIL.readFile(region.getFileName(), this);
 
 			ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax = this.groupByOutliersAndSize(
 					lines, 
 					region);
 
-			List<IndexMetaData> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
+			List<IndexMetaDataBO> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
+
+			indexes
+				.stream()
+				.map(metaDataTransformer)
+				.forEach(index -> {
+					try {
+						if(!this.metaConfigs.getIsTestMode())
+							this.preIndexService.index(index, false);
+					} catch (IndexCreationException | MetaDataCreationException e) {
+						summary.append(String.format("\tRegion : %s, Index : %s creation Exception", region.name(), index));
+						logger.error(String.format("\tRegion : %s, Index : %s creation Exception", region.name(), index), e);
+					}
+				});
 			
-			indexes.forEach(index -> {
-				try {
-					this.preIndexService.index(index, false);
-				} catch (IndexCreationException | MetaDataCreationException e) {
-					//DO Nothing
-					//Already handled in the index service
-				}
-			});
-			
+
 			summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region.name(), groupByIndexSumMax.size()));
 		} catch (IOException ioe) {
 			logger.info("Exception when processing "+region.getFileName(), ioe);
@@ -119,9 +111,9 @@ public class IndexMetaGeneratorService {
 		}
 	}
 
-	private List<IndexMetaData> generateIndexSnapshot(ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax, Region region) {
+	private List<IndexMetaDataBO> generateIndexSnapshot(ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax, Region region) {
 
-		List<IndexMetaData> indexes = new ArrayList<>();
+		List<IndexMetaDataBO> indexes = new ArrayList<>();
 		String outputFileName = region+"_indexes.txt";
 		File newFile = new File(outputFileName);
 		if(newFile.exists())
@@ -140,26 +132,30 @@ public class IndexMetaGeneratorService {
 					HistogramData endRange = subSet.get(subSet.size()-1);
 					Integer indexMemSize = groupByIndexSumMax.get(i).getLeft().intValue();
 					Date startDate = startRange.getDate();
-					String indexName = String.format("%s_%s_data_%s_%d_archive.av5", 
-												this.metaConfigs.getTenant(), 
-												region.name(), 
-												UTIL.getDateForIndex(startDate), SEQ_NO_1000)
-											.toLowerCase();
+					String indexName = String.format(INDEX_NAME_PATTERN, 
+							this.metaConfigs.getTenant(), 
+							UTIL.getDateForIndex(startDate), 
+							SEQ_NO_1000)
+							.toLowerCase();
 
 					logger.debug(String.format("IndexID:%s, StartDate:%s, EndDate:%s, MemoryConsumption:%d(KB)|%d(GB), ",
 							indexName, startRange.getDateInString(), endRange.getDateInString(), indexMemSize.intValue(), indexMemSize.intValue()/mega));
 					fw.write(String.format("[%s -to- %s]\t:\tIndexID:%s, MemoryConsumption:%d(KB)|%d(GB)\n",
 							startRange.getDateInString(), endRange.getDateInString(), indexName, indexMemSize.intValue(), indexMemSize.intValue()/mega));
 
-					IndexMetaData indexMetaData = prepareIndexMetadata(
-							SEQ_NO_1000, 
-							this.activeFl, this.indexFull, this.siteId, this.cluster, this.indexType, this.mappingSchemaVersion, 
-							startDate, endRange.getDate(), replicaCount, this.metaConfigs.getShards(), indexName);
-					indexes.add(indexMetaData);
+					IndexMetaDataBO metaDataBO = IndexMetaDataBO.builder()
+														.setIndexName(indexName)
+														.setFromDate(startDate)
+														.setSequenceNumber(SEQ_NO_1000)
+														.setShardCount(this.metaConfigs.getShards())
+														.setToDate(endRange.getDate())
+														.build();
+					
+					indexes.add(metaDataBO);
 				}
 
-				fw.write("************** END ***********************\n");
-				logger.debug("************** END ***********************");
+				fw.write("************** "+region+" END ***********************\n");
+				logger.debug("************** "+region+" END ***********************\n");
 
 				fw.close();
 			}
@@ -167,33 +163,6 @@ public class IndexMetaGeneratorService {
 			logger.error("Exception in writing the details to output file", e);
 		}
 		return indexes;
-	}
-
-	public IndexMetaData prepareIndexMetadata(int seqNo, boolean activeFl, boolean indexFull, String siteId,
-			String cluster, String indexType, String mappingSchemaVersion, Date startDate, Date endDate,
-			int replicaCount, int shardCount, String indexName) {
-		
-		Date currentDate = UTIL.getGMTDate(System.currentTimeMillis());
-		
-		IndexMetaData indexMetaData = new IndexMetaData();
-		indexMetaData.setActiveFl(activeFl);
-		indexMetaData.setCluster(cluster);
-		indexMetaData.setCreateDateTime(currentDate);
-		indexMetaData.setFromDate(startDate);
-		indexMetaData.setToDate(endDate);
-		indexMetaData.setMaxDate(new Date(UTIL.getEndOfDay(startDate)));
-		indexMetaData.setModifiedDateTime(currentDate);
-		indexMetaData.setMaxProcessedDate(currentDate);
-		indexMetaData.setIndexAppType(indexType);
-		indexMetaData.setIndexFull(indexFull);
-		indexMetaData.setIndexName(indexName);
-		indexMetaData.setIndexVersion(mappingSchemaVersion);
-		indexMetaData.setReplicaCount(replicaCount);
-		indexMetaData.setShardCount(shardCount);
-		indexMetaData.setSequenceNumber(seqNo);
-		indexMetaData.setSiteId(siteId);
-
-		return indexMetaData;
 	}
 
 	private ArrayList<Pair<Double, List<HistogramData>>> groupByOutliersAndSize(Stream<String> lines, Region region) {
@@ -226,7 +195,7 @@ public class IndexMetaGeneratorService {
 			Pair<Double, List<HistogramData>> lastPair = lPair.isEmpty() ? null : lPair.get(lPair.size() - 1);
 			Double indexSize = histo.getIndexSize();
 			Region region = histo.getRegion();
-			
+
 			Boolean useOutliers = ApplicationContextProvider.isOutlierEnabled();
 
 			if(!useOutliers) {
@@ -293,4 +262,5 @@ public class IndexMetaGeneratorService {
 			}
 		}
 	}
+
 }

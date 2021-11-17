@@ -2,7 +2,6 @@ package com.smarsh.preindex.config;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Optional;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +23,7 @@ public class PreIndexMetaConfigs {
 	private String startDate;
 	private Boolean isEsPersistenceEnabled;
 	private Boolean isMongoPersistenceEnabled;
+	private Boolean isTestMode=false;
 
 	public int getShards() {
 		return shards;
@@ -78,5 +78,11 @@ public class PreIndexMetaConfigs {
 	}
 	public void setIsMongoPersistenceEnabled(Boolean isMongoPersistenceEnabled) {
 		this.isMongoPersistenceEnabled = isMongoPersistenceEnabled;
+	}
+	public Boolean getIsTestMode() {
+		return isTestMode;
+	}
+	public void setIsTestMode(Boolean isTestMode) {
+		this.isTestMode = isTestMode;
 	}
 }

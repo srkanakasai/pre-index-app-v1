@@ -30,6 +30,7 @@ public class Constants {
 	public static final int SHARD_SIZE_IN_GB = 20;
 	public static final int OCCUPENCY_PERCENTAGE = 80;
 	public static final int ROUND_OFF_FACTOR = 50;
+	public static final int SEQ_NO_1000 = 1000;
 	
 	//public static final int MAX_SIZE_PER_INDEX = 200000000;
 	public static final Supplier<BigDecimal> IndexToDataRatio(Integer percent){

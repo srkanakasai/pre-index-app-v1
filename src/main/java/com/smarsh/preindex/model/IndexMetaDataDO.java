@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document (collection = "index_metadata")
-public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
+public class IndexMetaDataDO implements Serializable,Comparable<IndexMetaDataDO> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -205,7 +205,7 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		IndexMetaData other = (IndexMetaData) obj;
+		IndexMetaDataDO other = (IndexMetaDataDO) obj;
 		if (activeFl != other.activeFl)
 			return false;
 		if (cluster == null) {
@@ -261,7 +261,7 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 	}
 	
 	@Override
-	public int compareTo(IndexMetaData otherMetadata) {
+	public int compareTo(IndexMetaDataDO otherMetadata) {
 		if (this == otherMetadata)
 			return 0;
 		if (otherMetadata == null)
@@ -285,9 +285,9 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 		return (int)(sequenceNumber-otherMetadata.sequenceNumber);
 	}
 
-	public IndexMetaData insertClone(){
+	public IndexMetaDataDO insertClone(){
 
-		IndexMetaData metaDataInsert = (IndexMetaData)this.clone();
+		IndexMetaDataDO metaDataInsert = (IndexMetaDataDO)this.clone();
 		metaDataInsert.setModifiedDateTime(null);
 		metaDataInsert.setCreateDateTime(null);
 		metaDataInsert.setIndexFull(false);
@@ -301,7 +301,7 @@ public class IndexMetaData implements Serializable,Comparable<IndexMetaData> {
 			return super.clone();
 		}
 		catch(CloneNotSupportedException exception){
-			IndexMetaData metaData = new IndexMetaData();
+			IndexMetaDataDO metaData = new IndexMetaDataDO();
 			metaData.setIndexName(getIndexName() );
 			metaData.setCluster(getCluster() );
 			metaData.setIndexAppType(getIndexAppType() );

@@ -56,8 +56,10 @@ public class EsIndexMetaDataRepo {
 			final Integer replicaCount,
 			boolean deleteExisting) throws IndexCreationException {
 		
-		if(!preIndexConfigs.getIsEsPersistenceEnabled())
+		if(!preIndexConfigs.getIsEsPersistenceEnabled()) {
+			LOG.debug("Skipping ES persistence as wowo is OFF- isEsPersistenceEnabled="+preIndexConfigs.getIsEsPersistenceEnabled());
 			return;
+		}
 		
 		try {
 			if (this.isExisting(indexName)) {
@@ -103,7 +105,7 @@ public class EsIndexMetaDataRepo {
 		} catch (final Exception ioe) {
 			LOG.error(ioe.getMessage(), ioe);
 			throw new PreIndexRunTimeException(indexName, ioe);
-		}
+		} 
 	}
 
 	public boolean deleteIndex(String indexName) throws PreIndexRunTimeException{
