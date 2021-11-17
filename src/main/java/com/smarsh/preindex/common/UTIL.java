@@ -4,12 +4,19 @@ import static com.smarsh.preindex.common.Constants.ROUND_OFF_FACTOR;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 
@@ -17,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.FileCopyUtils;
 
 public class UTIL {
 	
@@ -60,9 +68,9 @@ public class UTIL {
 		int maxAllowedSizePerIndex = ((maxIndexMemoryAvailable*fillPercentage)/100);
 		return (ROUND_OFF_FACTOR*(Math.round((double)maxAllowedSizePerIndex/ROUND_OFF_FACTOR)));
 	}
-
-	public static Stream<String> readFile(String fileName, Object o) throws IOException {
-		InputStream inputStream = o.getClass().getResourceAsStream("/"+fileName);
+	
+	public static Stream<String> readFile(String dirPath, String fileName) throws IOException{
+		InputStream inputStream = Files.newInputStream(Paths.get(dirPath+File.separator+fileName));
 		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		Stream<String> lines = bufferedReader.lines();
@@ -80,27 +88,46 @@ public class UTIL {
 	}
 	
     public static String loadAsString(final String path) {
-        try {
-            final File resource = new ClassPathResource(path).getFile();
-
-            return new String(Files.readAllBytes(resource.toPath()));
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
+    	
+    	ClassPathResource classPathResource = new ClassPathResource(path);
+    	try {
+    	    byte[] binaryData = FileCopyUtils.copyToByteArray(classPathResource.getInputStream());
+    	    return new String(binaryData, StandardCharsets.UTF_8);
+    	} catch (IOException e) {
+    		LOG.error(e.getMessage(), e);
             return null;
-        }
+    	}
     }
     
-    public static void main(String[] args) {
-		Date date = Constants.parse("1987-12-31");
-		System.out.println("1987-12-31 = "+date);
-		
-		DateTime time = new DateTime(date, DateTimeZone.UTC);
-		Date utcDate = new Date(time.getMillis());
-		System.out.println("UTC="+utcDate);
-		
-		Date gmtDate = UTIL.getGMTDate(utcDate.getTime()/1000);
-		System.out.println("gmtDate="+gmtDate);
+    public static void main(String[] args) throws URISyntaxException {
+    	File jarDir = new File(ClassLoader.getSystemClassLoader().getResource(".").toURI());
+    	System.out.println(jarDir.getPath());
+    	
+    	File jar = new File(UTIL.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    	System.out.println(jar.getPath());
 	}
+    
+    public static List<String> strReader (File in) throws URISyntaxException
+    {
+        List<String> totLines = new ArrayList<String>();
+
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(in));
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                totLines.add(line);
+            }
+            br.close();
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return totLines;
+    }
     
     public static Date getGMTDate(long timeInMillis) {
 		Calendar gmtCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));

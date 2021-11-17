@@ -15,16 +15,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 
+import com.smarsh.preindex.bo.BatchInput;
 import com.smarsh.preindex.bo.HistogramData;
 import com.smarsh.preindex.bo.IndexMetaDataBO;
+import com.smarsh.preindex.bo.Outliers;
 import com.smarsh.preindex.bo.Pair;
-import com.smarsh.preindex.common.Region;
+import com.smarsh.preindex.common.BatchUtil;
 import com.smarsh.preindex.common.UTIL;
 import com.smarsh.preindex.config.ApplicationContextProvider;
 import com.smarsh.preindex.config.PreIndexMetaConfigs;
@@ -50,23 +54,34 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
 	private static Long MAX_SIZE_PER_INDEX = 200000000l; //DEFAULT
 	
+	@PostConstruct
+	private void init() {
+		MAX_SIZE_PER_INDEX = UTIL.getMaxSizePerIndexInGB(
+				this.metaConfigs.getShards(),
+				this.metaConfigs.getShardsize(),
+				this.metaConfigs.getFillThreshold())*mega;
+	}
+	
+	//generatePreIndexes(Arrays.asList(Region.values()));
+	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		generatePreIndexes(Arrays.asList(Region.values()));
+		
+		List<BatchInput> batchInputs = BatchUtil.extractBatchInput(args);
+		
+		String batchInputFileDir = BatchUtil.getInputDirPath(args);
+		
+		processBatchInput(batchInputFileDir, batchInputs);
+		
 	}
-
-	public void generatePreIndexes(List<Region> regions) {
+	
+	private void processBatchInput(String batchInputFileDir, List<BatchInput> batchInputs) {
 		logger.info("***generatePreIndexes STARTS with TESTMODE="+this.metaConfigs.getIsTestMode()+"****");
 		StringBuilder summary = new StringBuilder("\n**\tIndex Summary\t**\n");
 		try {
 
-			MAX_SIZE_PER_INDEX = UTIL.getMaxSizePerIndexInGB(
-					this.metaConfigs.getShards(),
-					this.metaConfigs.getShardsize(),
-					this.metaConfigs.getFillThreshold())*mega;
-
-			for(Region region : regions) {
-				handleRegion(summary, region);
+			for(BatchInput input : batchInputs) {
+				processBatchInput(summary, batchInputFileDir, input);
 			}
 
 			summary.append("**\tEnd Of Summary\t**");
@@ -78,17 +93,20 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 			logger.info(summary.toString());
 			logger.info("***generatePreIndexes END****");
 		}
+		
 	}
 
-	private void handleRegion(final StringBuilder summary, final Region region) {
+	public void processBatchInput(StringBuilder summary, String batchInputFileDir, BatchInput batchInput) throws IOException {
+		
+		String region = batchInput.getRegion();
 		try {
-			Stream<String> lines = UTIL.readFile(region.getFileName(), this);
+			Stream<String> histoFileStream = UTIL.readFile(batchInputFileDir, batchInput.getFileName());
 
 			ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax = this.groupByOutliersAndSize(
-					lines, 
-					region);
+					histoFileStream, 
+					batchInput);
 
-			List<IndexMetaDataBO> indexes = generateIndexSnapshot(groupByIndexSumMax, region);
+			List<IndexMetaDataBO> indexes = generateIndexSnapshot(groupByIndexSumMax, batchInput, batchInputFileDir);
 
 			indexes
 				.stream()
@@ -98,24 +116,25 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 						if(!this.metaConfigs.getIsTestMode())
 							this.preIndexService.index(index, false);
 					} catch (IndexCreationException | MetaDataCreationException e) {
-						summary.append(String.format("\tRegion : %s, Index : %s creation Exception", region.name(), index));
-						logger.error(String.format("\tRegion : %s, Index : %s creation Exception", region.name(), index), e);
+						summary.append(String.format("\tRegion : %s, Index : %s creation Exception", region , index));
+						logger.error(String.format("\tRegion : %s, Index : %s creation Exception", region, index), e);
 					}
 				});
 			
 
-			summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region.name(), groupByIndexSumMax.size()));
+			summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region, groupByIndexSumMax.size()));
 		} catch (IOException ioe) {
-			logger.info("Exception when processing "+region.getFileName(), ioe);
-			summary.append(String.format("\tRegion : %s, Index creation Exception", region.name()));
+			logger.info("Exception when processing "+batchInput.getFileName(), ioe);
+			summary.append(String.format("\tRegion : %s, Index creation Exception", region));
 		}
 	}
 
-	private List<IndexMetaDataBO> generateIndexSnapshot(ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax, Region region) {
+	private List<IndexMetaDataBO> generateIndexSnapshot(ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax, BatchInput batchInput, String batchInputFileDir) {
 
 		List<IndexMetaDataBO> indexes = new ArrayList<>();
+		String region = batchInput.getRegion();
 		String outputFileName = region+"_indexes.txt";
-		File newFile = new File(outputFileName);
+		File newFile = new File(batchInputFileDir+File.separator+outputFileName);
 		if(newFile.exists())
 			newFile.delete();
 
@@ -153,10 +172,8 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 					
 					indexes.add(metaDataBO);
 				}
-
 				fw.write("************** "+region+" END ***********************\n");
 				logger.debug("************** "+region+" END ***********************\n");
-
 				fw.close();
 			}
 		} catch (IOException e) {
@@ -165,7 +182,7 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 		return indexes;
 	}
 
-	private ArrayList<Pair<Double, List<HistogramData>>> groupByOutliersAndSize(Stream<String> lines, Region region) {
+	private ArrayList<Pair<Double, List<HistogramData>>> groupByOutliersAndSize(Stream<String> lines, BatchInput batchInput) {
 
 		ArrayList<Pair<Double, List<HistogramData>>> groupByIndexSumMax = lines
 				.skip(1)
@@ -180,7 +197,7 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 					BigDecimal sizeInKB = new BigDecimal(data[2]);
 					Integer hour = Integer.parseInt(data[1]);
 					BigDecimal indexSizeV2 = sizeInKB.multiply(this.metaConfigs.getIndexToDocMem());
-					HistogramData histogramData = new HistogramData(region, date, sizeInKB, hour, indexSizeV2.doubleValue());
+					HistogramData histogramData = new HistogramData(batchInput.getRegion(), date, sizeInKB, hour, indexSizeV2.doubleValue(), batchInput.getOutliers());
 					return histogramData;
 				})
 				.sorted((h1,h2)->Long.valueOf(h1.getDate().getTime()).compareTo(h2.getDate().getTime()))
@@ -194,7 +211,7 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 		public static void indexAggregator(List<Pair<Double, List<HistogramData>>> lPair, HistogramData histo) {
 			Pair<Double, List<HistogramData>> lastPair = lPair.isEmpty() ? null : lPair.get(lPair.size() - 1);
 			Double indexSize = histo.getIndexSize();
-			Region region = histo.getRegion();
+			Outliers outliers = histo.getOutliers();
 
 			Boolean useOutliers = ApplicationContextProvider.isOutlierEnabled();
 
@@ -215,7 +232,7 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 					lPair.add(
 							new Pair<Double, List<HistogramData>>(indexSize,
 									Arrays.asList(histo)));
-				} else if (histo.getDate().before(region.getLowerBound())) {
+				} else if (histo.getDate().before(outliers.getLowerBound())) {
 					if(lastPair.left + indexSize > MAX_SIZE_PER_INDEX) {
 						lPair.add(
 								new Pair<Double, List<HistogramData>>(
@@ -228,9 +245,9 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 						lastPair.setLeft(lastPair.getLeft() + indexSize);
 						lastPair.setRight(newList);
 					}
-				} else if(histo.getDate().after(region.getUpperBound())) {
+				} else if(histo.getDate().after(outliers.getUpperBound())) {
 					HistogramData lastDataMarkedAsComplete = lastPair.right.get(lastPair.right.size()-1);
-					if( (lastDataMarkedAsComplete.getDate().before(region.getUpperBound()))
+					if( (lastDataMarkedAsComplete.getDate().before(outliers.getUpperBound()))
 							|| (lastPair.left + indexSize > MAX_SIZE_PER_INDEX)) {
 						lPair.add(
 								new Pair<Double, List<HistogramData>>(indexSize,
@@ -245,7 +262,7 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 				}
 				else {
 					HistogramData lastDataMarkedAsComplete = lastPair.right.get(lastPair.right.size()-1);
-					if( (lastDataMarkedAsComplete.getDate().before(region.getLowerBound()))
+					if( (lastDataMarkedAsComplete.getDate().before(outliers.getLowerBound()))
 							|| (lastPair.left + indexSize > MAX_SIZE_PER_INDEX) // Size check
 							|| (UTIL.compareYears(lastDataMarkedAsComplete.getDate(), histo.getDate())>0)) { // YEAR wise partition
 						lPair.add(new Pair<Double, List<HistogramData>>(

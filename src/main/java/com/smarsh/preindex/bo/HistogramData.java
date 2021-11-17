@@ -4,25 +4,26 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import com.smarsh.preindex.common.Constants;
-import com.smarsh.preindex.common.Region;
 
 
 public class HistogramData {
 
-	private Region region;
+	private String region;
 	private Date date;
 	private BigDecimal sizeInKb;
 	private Integer hour;
 	private double indexSize;
-	public HistogramData(Region region, Date date, BigDecimal sizeInKb, Integer hour, double indexSize) {
+	private Outliers outliers;
+	public HistogramData(String region, Date date, BigDecimal sizeInKb, Integer hour, double indexSize, Outliers outliers) {
 		super();
 		this.region = region;
 		this.date = date;
 		this.sizeInKb = sizeInKb;
 		this.hour = hour;
 		this.indexSize = indexSize;
+		this.outliers = outliers;
 	}
-	public Region getRegion() {
+	public String getRegion() {
 		return region;
 	}
 	public Date getDate() {
@@ -39,6 +40,9 @@ public class HistogramData {
 	}
 	public String getDateInString() {
 		return Constants.dateFormat.get().format(date);
+	}
+	public Outliers getOutliers() {
+		return outliers;
 	}
 	@Override
 	public String toString() {
