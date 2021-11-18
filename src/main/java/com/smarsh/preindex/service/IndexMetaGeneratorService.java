@@ -37,8 +37,11 @@ import com.smarsh.preindex.exception.MetaDataCreationException;
 import com.smarsh.preindex.transformer.IndexMetaDataTransformer;
 
 @Service
-public class IndexMetaGeneratorService implements ApplicationRunner{
-
+public class IndexMetaGeneratorService implements ApplicationRunner {
+	
+	private static final int SEQ_NO_1000 = 1000;
+	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
+	private static Long MAX_SIZE_PER_INDEX = 200000000l; //DEFAULT
 	private static final String INDEX_NAME_PATTERN = "%s_data_%s_%d_archive.av5";
 
 	@Autowired
@@ -49,10 +52,6 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 	
 	@Autowired
 	private IndexMetaDataTransformer metaDataTransformer;
-	
-	private static final int SEQ_NO_1000 = 1000;
-	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
-	private static Long MAX_SIZE_PER_INDEX = 200000000l; //DEFAULT
 	
 	@PostConstruct
 	private void init() {
@@ -120,7 +119,6 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 						logger.error(String.format("\tRegion : %s, Index : %s creation Exception", region, index), e);
 					}
 				});
-			
 
 			summary.append(String.format("\tRegion : %s, Indexes Required : %d\n", region, groupByIndexSumMax.size()));
 		} catch (IOException ioe) {

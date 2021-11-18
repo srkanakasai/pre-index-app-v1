@@ -25,6 +25,7 @@ import com.smarsh.preindex.repo.mongo.IndexMetaDataRepository;
 public class IndexingService {
 
 	private static Logger LOG = Logger.getLogger(IndexingService.class);
+	private static Logger ERROR = Logger.getLogger("error");
 
 	@Autowired
 	private EsIndexMetaDataRepo esIndexMetaDataRepo;
@@ -39,6 +40,8 @@ public class IndexingService {
 		boolean isDocPresent = this.metaDataService.isExisting(metaData);
 		if(isDocPresent)
 			this.metaDataService.deleteIndexMetaData(metaData);
+		
+		ERROR.error("Exception in creating index = "+metaData.toString(), exception);
 	}
 	
 	@Recover
@@ -48,6 +51,8 @@ public class IndexingService {
 		boolean isIndexPresent = this.esIndexMetaDataRepo.isExisting(metaData.getIndexName());
 		if(isIndexPresent)
 			this.esIndexMetaDataRepo.deleteIndex(metaData.getIndexName());
+		
+		ERROR.error("Exception in creating index = "+metaData.toString(), exception);
 	}
 
 	@Retryable(
@@ -63,7 +68,7 @@ public class IndexingService {
 			final IndexMetaDataDO metaData,
 			boolean deleteExisting) throws 
 	IndexCreationException, MetaDataCreationException {
-
+		
 		try {
 			boolean isIndexPresent = this.esIndexMetaDataRepo.isExisting(metaData.getIndexName());
 			boolean isDocPresent = this.metaDataService.isExisting(metaData);

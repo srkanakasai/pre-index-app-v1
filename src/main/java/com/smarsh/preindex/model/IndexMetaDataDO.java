@@ -169,15 +169,11 @@ public class IndexMetaDataDO implements Serializable,Comparable<IndexMetaDataDO>
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("IndexMetaData [_id=").append(_id).append(", indexAppType=").append(indexAppType)
-				.append(", cluster=").append(cluster).append(", indexName=").append(indexName).append(", fromDate=")
-				.append(fromDate).append(", toDate=").append(toDate).append(", maxDate=").append(maxDate)
-				.append(", maxProcessedDate=").append(maxProcessedDate).append(", indexVersion=").append(indexVersion)
-				.append(", createDateTime=").append(createDateTime).append(", modifiedDateTime=")
-				.append(modifiedDateTime).append(", shardCount=").append(shardCount).append(", replicaCount=")
-				.append(replicaCount).append(", sequenceNumber=").append(sequenceNumber).append(", activeFl=")
-				.append(activeFl).append(", indexFull=").append(indexFull).append(", siteId=").append(siteId)
-				.append("]");
+		builder.append("[indexName=").append(indexName).append(", fromDate=").append(fromDate)
+				.append(", toDate=").append(toDate).append(", maxDate=").append(maxDate).append(", maxProcessedDate=")
+				.append(maxProcessedDate).append(", indexVersion=").append(indexVersion).append(", createDateTime=")
+				.append(createDateTime).append(", shardCount=").append(shardCount).append(", replicaCount=")
+				.append(replicaCount).append("]");
 		return builder.toString();
 	}
 	@Override
