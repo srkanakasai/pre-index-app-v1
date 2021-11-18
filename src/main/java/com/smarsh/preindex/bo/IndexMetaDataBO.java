@@ -39,12 +39,13 @@ public class IndexMetaDataBO {
 		this.sequenceNumber = sequenceNumber;
 	}
 
-	public static class Builder{
+	public static class Builder {
 		private String indexName;
 		private Date fromDate;
 		private Date toDate;
 		private int shardCount;
 		private int sequenceNumber;
+		
 		public Builder setIndexName(String indexName) {
 			this.indexName = indexName;
 			return this;

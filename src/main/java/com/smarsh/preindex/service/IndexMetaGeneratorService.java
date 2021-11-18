@@ -49,7 +49,7 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 	
 	@Autowired
 	private IndexMetaDataTransformer metaDataTransformer;
-
+	
 	private static final int SEQ_NO_1000 = 1000;
 	private static Logger logger = Logger.getLogger(IndexMetaGeneratorService.class);
 	private static Long MAX_SIZE_PER_INDEX = 200000000l; //DEFAULT
@@ -279,5 +279,4 @@ public class IndexMetaGeneratorService implements ApplicationRunner{
 			}
 		}
 	}
-
 }
