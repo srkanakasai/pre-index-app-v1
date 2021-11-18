@@ -87,5 +87,5 @@
     Examples:
     APAC_indexes.txt
     ```
-- Logs are available in `pre-index-app.log` to debug. 
-- Final Error logs are separately logger in `pre-index-app-error.log`
+- Application logs are available in `pre-index-app.log`.
+- If there were any issues after configured retries too then its captured in `pre-index-app-error.log` for further manual intervention.
