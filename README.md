@@ -35,7 +35,7 @@
 
 ## How to RUN?
 
-- Create a folder like - C:/batch
+- Create a folder like - `C:/batch`
 - Place the histogram files in above folder. Samples Checked in.
     ```
     APACHistogram.txt
